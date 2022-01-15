@@ -7,9 +7,11 @@ var cors = require("cors");
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var testAPIRouter = require("./routes/testBackend");
-var MongoClient = require('mongodb').MongoClient;
+const { MongoClient } = require('mongodb');
 var nodemailer = require('nodemailer');
-
+const dotenv = require('dotenv');
+const { endianness } = require('os');
+dotenv.config();
 var app = express();
 
 // view engine setup
@@ -43,17 +45,31 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-var url = "mongodb+srv://dalalthree:d!Aw*tDJ-6HDTD$@cluster0.euxda.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 
-MongoClient.connect(url, function(err, db) {
-  if (err) throw err;
-  var dbo = db.db("mydb");
-  var myobj = { name: "Co Inc", address: "Road 3" };
-  dbo.collection("customers").insertOne(myobj, function(err, res) {
+const uri = "mongodb+srv://" 
+  + process.env.DB_USER + ":" 
+  + process.env.DB_PASS
+  + "@cluster0.euxda.mongodb.net/"
+  + "mydb?retryWrites=true&w=majority";
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+client.connect(err => {
+  console.log("error:");
+  console.log(err);
+  const totalQueries = 1;
+  var completed = 0;
+  const collection = client.db("mydb").collection("customers");
+  var myobj = { name: "Company Inc", address: "Highway 37" };
+  collection.insertOne(myobj, function(err, res) {
     if (err) throw err;
     console.log("1 document inserted");
-    db.close();
+    end();
   });
+  function end(){
+    if (++completed >= totalQueries){
+      client.close;
+    }
+  }
+  // perform actions on the collection object
 });
 
 var transporter = nodemailer.createTransport({
