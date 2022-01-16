@@ -12,7 +12,9 @@ class EmailForm extends Component {
     return  (
       <div>
         <form action="http://localhost:9000/" method="POST">
-          <input type="email" name="email" />
+          <input type="text" name="email" placeholder="Email(s)"/><br />
+          <input type="text" name="subject" placeholder="Subject"/> <br />
+          <textarea rows="10" name="content" placeholder="Message"></textarea> <br />
           <button type="submit">
             Submit
           </button>
@@ -35,7 +37,7 @@ class App extends Component {
             <div className="App">
                 <header className="App-header">
                     <img src={logo} className="App-logo" alt="logo" />
-                    <h1 className="App-title">Welcome to React</h1>
+                    <h1 className="App-title">Email</h1>
                 </header>
                 <EmailForm></EmailForm>
                 <p className="App-intro">{this.state.apiResponse}</p>

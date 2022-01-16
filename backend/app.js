@@ -37,7 +37,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.post("/", function(req, res, next) {
-  sendEmail(req.body.email);
+  sendEmail(req.body.email, req.body.subject, req.body.content);
   res.send(req.body.email);
 });
 
@@ -61,7 +61,8 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-
+//mongo db
+/*
 const uri = "mongodb+srv://" 
   + process.env.DB_USER + ":" 
   + process.env.DB_PASS
@@ -86,8 +87,10 @@ client.connect(err => {
     }
   }
   // perform actions on the collection object
-});
-function sendEmail(email){
+});*/
+
+
+function sendEmail(email, subject, content){
   console.log(email);
   var transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -100,8 +103,8 @@ function sendEmail(email){
   var mailOptions = {
     from: 'dalalryan717@gmail.com',
     to: email,
-    subject: 'Email',
-    text: 'stuff inside the email!'
+    subject: subject,
+    html: content
   };
   transporter.sendMail(mailOptions, function(error, info){
     if (error) {
