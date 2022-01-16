@@ -1,34 +1,22 @@
+//imports
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require("cors");
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var testAPIRouter = require("./routes/testBackend");
-const axios = require("axios");
-
-var email;
-const { MongoClient } = require('mongodb');
 var nodemailer = require('nodemailer');
-var bodyParser = require('body-parser');
+const { MongoClient } = require('mongodb');
 const dotenv = require('dotenv');
-const { endianness } = require('os');
 
+//enviornment variable set up
 dotenv.config();
+
+
 var app = express();
-const router = express.Router();
-
-
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-
-/*app.use( bodyParser.json() );       // to support JSON-encoded bodies
-app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
-  extended: true
-})); */
 app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
@@ -36,14 +24,24 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.post("/", function(req, res, next) {
-  sendEmail(req.body.email, req.body.subject, req.body.content);
-  res.send(req.body.email);
+//gets the information needed to send email
+app.post("/sendEmail", function(req, res, next) {
+  if(req.body.email.toLowerCase() == "mailing list"){
+    sendMailingList(req.body.content);
+  }
+  else{
+    sendEmail(req.body.email, req.body.subject, req.body.content);
+  }
+  //tells the user whether it succeded
+  res.send("Email Sent");
 });
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-//app.use("/testBackend", testAPIRouter);
+app.post("/addToMailingList", function(req, res, next) {
+  addToMailingList(req.body.name, req.body.email);
+  //tells the user whether it succeded
+  res.send("Added to Mailing List");
+});
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -62,36 +60,85 @@ app.use(function(err, req, res, next) {
 });
 
 //mongo db
-/*
 const uri = "mongodb+srv://" 
   + process.env.DB_USER + ":" 
   + process.env.DB_PASS
   + "@cluster0.euxda.mongodb.net/"
   + "mydb?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-client.connect(err => {
-  console.log("error:");
-  console.log(err);
-  const totalQueries = 1;
-  var completed = 0;
-  const collection = client.db("mydb").collection("customers");
-  var myobj = { name: "Company Inc", address: "Highway 37" };
-  collection.insertOne(myobj, function(err, res) {
-    if (err) throw err;
-    console.log("1 document inserted");
-    end();
-  });
-  function end(){
-    if (++completed >= totalQueries){
-      client.close;
+function addToMailingList(name, email){
+  client.connect(err => {
+    //makes sure all queries are complete before closing a connection
+    const totalQueries = 2;
+    var completed = 0;
+    //sets up the collection
+    const collection = client.db("mydb").collection("mailingList");
+    
+    //checks if someone with the email already signed up
+    var query = { email: email };
+    collection.find(query).toArray(function(err, result) {
+      if (err) throw err;
+      if (result.length > 0){
+        client.close();
+        console.log("person already in db");
+        addPerson(false, null, null);
+      }
+      else{
+        end();
+        addPerson(true, name, email);
+      }
+    });
+    //adds a person defined by paramaters to the colleciton
+    function addPerson(success, name, email){
+      var person = { name: name, email: email };
+      if(success){
+        collection.insertOne(person, function(err, res) {
+          if (err) throw err;
+          console.log("1 document inserted");
+          end();
+        });
+      }
     }
-  }
-  // perform actions on the collection object
-});*/
+    //if all queries are complete closes the connection
+    function end(){
+      if (++completed >= totalQueries){
+        client.close;
+      }
+    }
+  });
+}
 
+function sendMailingList(content){
+  client.connect(err => {
+    //makes sure all queries are complete before closing a connection
+    const totalQueries = 1;
+    var completed = 0;
+    //sets up the collection
+    const collection = client.db("mydb").collection("mailingList");
+    
+    //gets all emails in db
+    collection.find({}).toArray(function(err, result) {
+      if (err) throw err;
+      for (var i = 0; i < result.length; i ++){
+        sendEmail(
+          result[i].email,
+          "Mailing List News",
+          "<h2>Hello " + result[i].name + ",</h2>" 
+          + content
+        );
+      }
+      end();
+    });
+    //if all queries are complete closes the connection
+    function end(){
+      if (++completed >= totalQueries){
+        client.close;
+      }
+    }
+  });
+}
 
 function sendEmail(email, subject, content){
-  console.log(email);
   var transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -110,7 +157,7 @@ function sendEmail(email, subject, content){
     if (error) {
       console.log(error);
     } else {
-      console.log('Email sent: ' + info.response);
+      console.log("Email Success: " + info);
     }
   });
 }

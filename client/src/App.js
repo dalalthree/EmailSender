@@ -3,18 +3,42 @@ import logo from "./logo.svg";
 import "./App.css";
 
 
-class EmailForm extends Component {
+class SendEmailForm extends Component {
   constructor(props) {
     super(props);
   }
 
+  
   render() {
     return  (
       <div>
-        <form action="http://localhost:9000/" method="POST">
-          <input type="text" name="email" placeholder="Email(s)"/><br />
+        <h3>Send an Email</h3>
+        <form action="http://192.168.1.14:9000/sendEmail" method="POST">
+          <input type="text" name="email" placeholder="Email(s) or 'mailing list'"/><br />
           <input type="text" name="subject" placeholder="Subject"/> <br />
           <textarea rows="10" name="content" placeholder="Message"></textarea> <br />
+          <button type="submit">
+            Submit
+          </button>
+        </form>
+      </div>
+    );
+  }
+}
+
+class MailingListForm extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  
+  render() {
+    return  (
+      <div>
+        <h3>Join the Mailing List</h3>
+        <form action="http://192.168.1.14:9000/addToMailingList" method="POST">
+          <input type="text" name="name" placeholder="Name"/><br />
+          <input type="text" name="email" placeholder="Email"/> <br />
           <button type="submit">
             Submit
           </button>
@@ -27,7 +51,6 @@ class EmailForm extends Component {
 class App extends Component {
     constructor(props) {
         super(props);
-        this.state = { apiResponse: "" };
     }
 
     
@@ -39,8 +62,8 @@ class App extends Component {
                     <img src={logo} className="App-logo" alt="logo" />
                     <h1 className="App-title">Email</h1>
                 </header>
-                <EmailForm></EmailForm>
-                <p className="App-intro">{this.state.apiResponse}</p>
+                <SendEmailForm></SendEmailForm>
+                <MailingListForm></MailingListForm>
             </div>
         );
     }
