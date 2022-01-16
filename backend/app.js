@@ -36,10 +36,14 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.post("/", function(req, res, next) {
+  sendEmail(req.body.email);
+  res.send(req.body.email);
+});
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use("/testBackend", testAPIRouter);
+//app.use("/testBackend", testAPIRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -83,27 +87,29 @@ client.connect(err => {
   }
   // perform actions on the collection object
 });
-
-var transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'dalalryan717@gmail.com',
-    pass: process.env.EMAIL_PASS
-  }
-});
-  
-var mailOptions = {
-  from: 'dalalryan717@gmail.com',
-  to: email,
-  subject: 'testing Email using Node.js',
-  text: 'That was easy!'
-};
-transporter.sendMail(mailOptions, function(error, info){
-  if (error) {
-    console.log(error);
-  } else {
-    console.log('Email sent: ' + info.response);
-  }
-});
+function sendEmail(email){
+  console.log(email);
+  var transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'dalalryan717@gmail.com',
+      pass: process.env.EMAIL_PASS
+    }
+  });
+    
+  var mailOptions = {
+    from: 'dalalryan717@gmail.com',
+    to: email,
+    subject: 'Email',
+    text: 'stuff inside the email!'
+  };
+  transporter.sendMail(mailOptions, function(error, info){
+    if (error) {
+      console.log(error);
+    } else {
+      console.log('Email sent: ' + info.response);
+    }
+  });
+}
 
 module.exports = app;

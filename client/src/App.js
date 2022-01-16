@@ -11,7 +11,7 @@ class EmailForm extends Component {
   render() {
     return  (
       <div>
-        <form action="http://localhost:9000/testBackend" method="POST">
+        <form action="http://localhost:9000/" method="POST">
           <input type="email" name="email" />
           <button type="submit">
             Submit
@@ -28,16 +28,7 @@ class App extends Component {
         this.state = { apiResponse: "" };
     }
 
-    callAPI() {
-      fetch("http://localhost:9000/testBackend")
-          .then(res => res.text())
-          .then(res => this.setState({ apiResponse: res }))
-          .catch(err => err);
-  }
-
-  componentDidMount() {
-      this.callAPI();
-  }
+    
 
     render() {
         return (
