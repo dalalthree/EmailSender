@@ -7,23 +7,35 @@ var cors = require("cors");
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var testAPIRouter = require("./routes/testBackend");
+const axios = require("axios");
+
+var email;
 const { MongoClient } = require('mongodb');
 var nodemailer = require('nodemailer');
+var bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const { endianness } = require('os');
+
 dotenv.config();
 var app = express();
+const router = express.Router();
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+/*app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+})); */
 app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
@@ -82,7 +94,7 @@ var transporter = nodemailer.createTransport({
   
 var mailOptions = {
   from: 'dalalryan717@gmail.com',
-  to: 'ryanadalal@gmail.com',
+  to: email,
   subject: 'testing Email using Node.js',
   text: 'That was easy!'
 };
